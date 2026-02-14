@@ -9,5 +9,8 @@
   "action": {
     "default_popup": "popup.html",
     "default_title": "Streetlight Ledger"
+  },
+  "icons": {
+    "128": "DetectiveCookie.png"
   }
 }
