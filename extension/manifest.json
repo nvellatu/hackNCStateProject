@@ -1,28 +1,5 @@
 {
   "manifest_version": 3,
-<<<<<<< Updated upstream
-  "name": "Cookie Viewer Extension",
-  "description": "Shows cookies from the current website",
-  "version": "1.1",
-  "icons": {
-    "48": "DetectiveCookie.png",
-    "128": "DetectiveCookie.png"
-  },
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "48": "DetectiveCookie.png",
-      "128": "DetectiveCookie.png"
-    }
-  },
-  "permissions": [
-    "cookies",
-    "activeTab"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ]
-=======
   "name": "Streetlight Ledger",
   "version": "0.2.0",
   "description": "Shows third-party domains a page contacts (tracking intensity).",
@@ -33,5 +10,4 @@
     "default_popup": "popup.html",
     "default_title": "Streetlight Ledger"
   }
->>>>>>> Stashed changes
 }
