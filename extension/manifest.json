@@ -1,5 +1,6 @@
 {
   "manifest_version": 3,
+<<<<<<< Updated upstream
   "name": "Cookie Viewer Extension",
   "description": "Shows cookies from the current website",
   "version": "1.1",
@@ -21,4 +22,16 @@
   "host_permissions": [
     "<all_urls>"
   ]
+=======
+  "name": "Streetlight Ledger",
+  "version": "0.2.0",
+  "description": "Shows third-party domains a page contacts (tracking intensity).",
+  "permissions": ["tabs", "webRequest", "cookies"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js" },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Streetlight Ledger"
+  }
+>>>>>>> Stashed changes
 }
