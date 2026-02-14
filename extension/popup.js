@@ -46,6 +46,30 @@ function formatExpiry(cookie) {
   return new Date(cookie.expirationDate * 1000).toLocaleString();
 }
 
+async function deleteCookie(cookie, tabUrl) {
+  try {
+    const removed = await chrome.cookies.remove({
+      url: tabUrl,
+      name: cookie.name,
+      // storeId: cookie.storeId,     // usually not needed
+      // partitionKey: cookie.partitionKey  // if using partitioned storage (Chrome 119+)
+    });
+
+    if (removed) {
+      console.log(`Deleted cookie: ${cookie.name}`);
+      // Optional: show brief feedback
+      document.getElementById("cookieStatus").textContent = `Deleted ${cookie.name} — refreshing list...`;
+      // Re-load cookies after short delay to let browser update
+      setTimeout(() => loadCookiesForTab({ url: tabUrl }), 300);
+    } else {
+      document.getElementById("cookieStatus").textContent = `Could not delete ${cookie.name}`;
+    }
+  } catch (err) {
+    console.error("Delete failed:", err);
+    document.getElementById("cookieStatus").textContent = `Error deleting ${cookie.name}: ${err.message}`;
+  }
+}
+
 async function loadCookiesForTab(tab) {
   const status = document.getElementById("cookieStatus");
   const ul = document.getElementById("cookieList");
@@ -71,14 +95,9 @@ async function loadCookiesForTab(tab) {
   }
 
   // Summary counts
-  let persistent = 0;
-  let session = 0;
-  let secure = 0;
-  let httpOnly = 0;
-
+  let persistent = 0, session = 0, secure = 0, httpOnly = 0;
   for (const c of cookies) {
-    if (c.session) session++;
-    else persistent++;
+    if (c.session) session++; else persistent++;
     if (c.secure) secure++;
     if (c.httpOnly) httpOnly++;
   }
@@ -88,14 +107,30 @@ async function loadCookiesForTab(tab) {
     `${persistent} persistent / ${session} session • ` +
     `${secure} Secure • ${httpOnly} HttpOnly`;
 
-  // Display cookie metadata (SAFE: no values)
+  // Display cookies with delete button
   for (const c of cookies) {
     const li = document.createElement("li");
     li.className = "cookie-item";
 
+    const header = document.createElement("div");
+    header.className = "cookie-header";
+
     const name = document.createElement("div");
     name.className = "cookie-name";
     name.textContent = c.name;
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "delete-btn";
+    delBtn.textContent = "Delete";
+    delBtn.title = "Remove this cookie";
+    delBtn.addEventListener("click", () => {
+      if (confirm(`Really delete cookie "${c.name}"?`)) {
+        deleteCookie(c, tab.url);
+      }
+    });
+
+    header.appendChild(name);
+    header.appendChild(delBtn);
 
     const meta = document.createElement("div");
     meta.className = "meta";
@@ -105,7 +140,7 @@ async function loadCookiesForTab(tab) {
       `Expires: ${formatExpiry(c)}<br>` +
       `Secure: ${c.secure ? "Yes" : "No"} | HttpOnly: ${c.httpOnly ? "Yes" : "No"} | SameSite: ${c.sameSite || "?"}`;
 
-    li.appendChild(name);
+    li.appendChild(header);
     li.appendChild(meta);
     ul.appendChild(li);
   }
@@ -120,13 +155,11 @@ async function refreshAll() {
     renderDomains(res);
   });
 
-  // Cookies (directly in popup)
+  // Cookies
   await loadCookiesForTab(tab);
 }
 
-// Load when popup opens
+// Initial load
 refreshAll();
 
-// Refresh button (if present)
-const btn = document.getElementById("refresh");
-if (btn) btn.addEventListener("click", refreshAll);
+document.getElementById("refresh")?.addEventListener("click", refreshAll);
