@@ -3,19 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My First Extension</title>
+  <title>Cookie Viewer</title>
   <style>
     body {
-      width: 280px;
+      width: 360px;
+      min-height: 200px;
       padding: 16px;
       font-family: system-ui, sans-serif;
-      text-align: center;
-      background: #f0f4f8;
+      background: #f8f9fa;
+      color: #333;
+      margin: 0;
     }
-    h1 { margin: 0 0 12px; font-size: 1.4rem; }
+    h2 { margin: 0 0 12px; font-size: 1.3rem; text-align: center; }
+    #status { text-align: center; color: #666; margin-bottom: 12px; }
+    #cookie-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .cookie-item {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .cookie-name { font-weight: bold; color: #0060df; }
+    .cookie-value {
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: #444;
+      max-height: 3em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .meta { font-size: 0.85rem; color: #777; margin-top: 6px; }
     button {
-      padding: 10px 20px;
-      font-size: 1rem;
+      display: block;
+      margin: 16px auto 0;
+      padding: 10px 24px;
       background: #0060df;
       color: white;
       border: none;
@@ -26,9 +54,10 @@
   </style>
 </head>
 <body>
-  <h1>Hello from your extension! 🎉</h1>
-  <p>Click the button below:</p>
-  <button id="greet">Say Hi!</button>
+  <h2>Cookies on this page</h2>
+  <div id="status">Loading current tab...</div>
+  <ul id="cookie-list"></ul>
+  <button id="refresh">Refresh</button>
 
   <script src="popup.js"></script>
 </body>
