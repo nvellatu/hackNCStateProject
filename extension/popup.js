@@ -152,3 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   document.getElementById("refresh").onclick = refreshAll;
 });
+document.getElementById("playGame").onclick = () => {
+  chrome.tabs.create({ url: chrome.runtime.getURL("game.html") });
+};
