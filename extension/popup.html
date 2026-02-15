@@ -3,8 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <style>
-      body { font-family: system-ui, sans-serif; width: 360px; margin: 12px; line-height: 1.4; background: #fdfdfd; }
-      
+      body {
+        font-family: system-ui, sans-serif;
+        width: 360px;
+        margin: 12px;
+        line-height: 1.4;
+        background: #121212;
+        color: #e0e0e0;
+      }
+
       /* New header with title + game button */
       #header {
         display: flex;
@@ -12,48 +19,115 @@
         align-items: center;
         margin-bottom: 12px;
       }
-      h1 { font-size: 16px; margin: 0; }
-      
+      h1 { font-size: 16px; margin: 0; color: #ffffff; }
+
       #gameBtn {
         background: none;
         border: none;
-        font-size: 28px;
+        font-size: 32px;
         cursor: pointer;
         padding: 4px 8px;
         border-radius: 8px;
         transition: background 0.2s;
       }
       #gameBtn:hover {
-        background: rgba(0,0,0,0.05);
+        background: rgba(255,255,255,0.1);
       }
       #gameBtn:active {
         transform: scale(0.95);
       }
+
+      h2 { font-size: 13px; border-bottom: 1px solid #444444; padding-bottom: 4px; color: #ffffff; }
+      .meta, .status { font-size: 11px; opacity: 0.85; margin-bottom: 8px; color: #bbbbbb; }
+      .pill {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        background: #333333;
+        color: #ffffff;
+        font-weight: bold;
+      }
+      #api-key-section { 
+        margin-bottom: 12px; 
+        padding: 10px; 
+        background: #1e1e1e; 
+        border-radius: 6px; 
+        border: 1px solid #333333; 
+      }
+      input { 
+        width: 92%; 
+        padding: 6px; 
+        margin: 5px 0; 
+        border: 1px solid #444444; 
+        border-radius: 4px; 
+        font-size: 10px; 
+        background: #222222; 
+        color: #e0e0e0; 
+      }
       
-      .meta, .status { font-size: 11px; opacity: 0.85; margin-bottom: 8px; }
-      .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11px; background: #eee; font-weight: bold; }
-      
-      #api-key-section { margin-bottom: 12px; padding: 10px; background: #fff3cd; border-radius: 6px; border: 1px solid #ffeeba; }
-      input { width: 92%; padding: 6px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 10px; }
-      
-      button { cursor: pointer; border-radius: 4px; border: none; padding: 6px 12px; font-size: 11px; font-weight: bold; }
+      button { 
+        cursor: pointer; 
+        border-radius: 4px; 
+        border: none; 
+        padding: 6px 12px; 
+        font-size: 11px; 
+        font-weight: bold; 
+      }
       #aiAnalyze { background: #0060df; color: white; }
-      #refresh { background: #e0e0e0; color: #333; }
-      #cleanHighRisk { background:#e63946;color:white; } /* if you have this */
+      #refresh { background: #333333; color: #e0e0e0; }
       .del-btn { background: #e63946; color: white; }
       .info-btn { background: #4dabf7; color: white; margin-right: 5px; }
 
       .cookie-item { 
-        background: white; border: 1px solid #eee; border-radius: 6px; 
-        padding: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        background: #1e1e1e; 
+        border: 1px solid #333333; 
+        border-radius: 6px; 
+        padding: 10px; 
+        margin-bottom: 10px; 
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
       }
       .cookie-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-      .cookie-name { font-size: 13px; font-weight: 600; }
-      .description { margin-top: 8px; font-size: 11px; background: #e3f2fd; padding: 8px; border-radius: 4px; color: #004085; }
-      .mono { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 10px; opacity: 0.8; }
+      .cookie-name {
+        flex: 1;                  /* Allow it to grow but also shrink/truncate */
+        min-width: 0;             /* Critical for truncation in flex containers */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .actions {
+        flex-shrink: 0;
+      }
+      .description { 
+        margin-top: 8px; 
+        font-size: 11px; 
+        background: #2c3e50; 
+        padding: 8px; 
+        border-radius: 4px; 
+        color: #a0d8ef; 
+      }
+      .mono { 
+        font-family: ui-monospace, SFMono-Regular, monospace; 
+        font-size: 10px; 
+        opacity: 0.8; 
+        color: #bbbbbb; 
+      }
       
-      #aiResponse { font-size: 11px; padding: 8px; background: #e7f3ff; border-radius: 4px; margin: 10px 0; display: none; color: #004085; border: 1px solid #b8daff; }
+      #aiResponse { 
+        font-size: 11px; 
+        padding: 8px; 
+        background: #2c3e50; 
+        border-radius: 4px; 
+        margin: 10px 0; 
+        display: none; 
+        color: #a0d8ef; 
+        border: 1px solid #34495e; 
+      }
       .row { display: flex; gap: 8px; margin: 12px 0; justify-content: center; }
+      
+      ul { padding: 0; margin: 0; list-style: none; }
+      #list li { color: #bbbbbb; }
     </style>
   </head>
   <body>
@@ -78,7 +152,7 @@
       <!-- <button id="cleanHighRisk">Clean High-Risk</button> if you have it -->
     </div>
     <div id="aiResponse"></div>
-    <h2 style="font-size: 13px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">Cookies</h2>
+    <h2 style="font-size: 13px; border-bottom: 1px solid #444444; padding-bottom: 4px; color: #ffffff;">Cookies</h2>
     <div class="status" id="cookieStatus" style="font-size: 10px; margin-bottom: 10px;"></div>
     <ul id="cookieList"></ul>
     <script src="popup.js"></script>
