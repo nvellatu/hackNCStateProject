@@ -1,165 +1,138 @@
-function fogLabel(thirdPartyCount, top) {
-  const totalReqs = top.reduce((s, x) => s + x.count, 0);
-  const score = thirdPartyCount * 2 + totalReqs / 10;
-  if (score >= 25) return "High Fog";
-  if (score >= 10) return "Medium Fog";
-  return "Low Fog";
+let riskMap = {}; 
+const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent";
+
+async function getApiKey() {
+  const data = await chrome.storage.local.get("geminiKey");
+  return data.geminiKey || null;
 }
 
-async function getActiveTab() {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  return tab || null;
-}
-
-function renderDomains(res) {
-  const meta = document.getElementById("meta");
-  const fog = document.getElementById("fog");
-  const list = document.getElementById("list");
-
-  if (!res) {
-    meta.textContent = "No data (try refreshing the page).";
-    fog.textContent = "";
-    list.innerHTML = "";
-    return;
-  }
-
-  meta.textContent = `Site: ${res.firstParty || "?"} • 3rd parties: ${res.thirdPartyCount}`;
-  fog.textContent = fogLabel(res.thirdPartyCount, res.top);
-
-  list.innerHTML = "";
-  if (res.top.length === 0) {
-    const li = document.createElement("li");
-    li.textContent = "No third-party domains observed yet (refresh page).";
-    list.appendChild(li);
-    return;
-  }
-
-  for (const item of res.top) {
-    const li = document.createElement("li");
-    li.textContent = `${item.domain} (${item.count})`;
-    list.appendChild(li);
-  }
-}
-
-function formatExpiry(cookie) {
-  if (!cookie.expirationDate) return "Session";
-  return new Date(cookie.expirationDate * 1000).toLocaleString();
-}
-
-async function deleteCookie(cookie, tabUrl) {
+// 1. Risk Analysis
+async function getAIRiskBatch(cookieNames) {
+  const key = await getApiKey();
+  if (!key || cookieNames.length === 0) return null;
+  const prompt = `Analyze: ${cookieNames.join(", ")}. Return ONLY JSON: {"cookieName": "Safe"|"Tracking"|"High Risk"}`;
   try {
-    const removed = await chrome.cookies.remove({
-      url: tabUrl,
-      name: cookie.name,
-      // storeId: cookie.storeId,     // usually not needed
-      // partitionKey: cookie.partitionKey  // if using partitioned storage (Chrome 119+)
+    const res = await fetch(`${API_URL}?key=${key}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
-
-    if (removed) {
-      console.log(`Deleted cookie: ${cookie.name}`);
-      // Optional: show brief feedback
-      document.getElementById("cookieStatus").textContent = `Deleted ${cookie.name} — refreshing list...`;
-      // Re-load cookies after short delay to let browser update
-      setTimeout(() => loadCookiesForTab({ url: tabUrl }), 300);
-    } else {
-      document.getElementById("cookieStatus").textContent = `Could not delete ${cookie.name}`;
-    }
-  } catch (err) {
-    console.error("Delete failed:", err);
-    document.getElementById("cookieStatus").textContent = `Error deleting ${cookie.name}: ${err.message}`;
-  }
+    const result = await res.json();
+    return JSON.parse(result.candidates[0].content.parts[0].text.replace(/```json|```/g, ""));
+  } catch (err) { return null; }
 }
 
+// 2. Info Feature
+async function getCookieInfo(name, domain) {
+  const key = await getApiKey();
+  if (!key) return "Set API key first.";
+  const prompt = `Explain cookie "${name}" from "${domain}" in 10-15 words.`;
+  try {
+    const res = await fetch(`${API_URL}?key=${key}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    const result = await res.json();
+    return result.candidates[0].content.parts[0].text.trim();
+  } catch (err) { return "Error loading info."; }
+}
+
+// 3. Display a list of cookies with full technical information.
 async function loadCookiesForTab(tab) {
-  const status = document.getElementById("cookieStatus");
   const ul = document.getElementById("cookieList");
   ul.innerHTML = "";
-
-  if (!tab?.url || tab.url.startsWith("chrome://") || tab.url.startsWith("about:")) {
-    status.textContent = "Cannot read cookies on this page (internal Chrome page).";
-    return;
-  }
-
-  let cookies = [];
-  try {
-    cookies = await chrome.cookies.getAll({ url: tab.url });
-  } catch (err) {
-    status.textContent = "Error reading cookies: " + err.message;
-    return;
-  }
-
-  const url = new URL(tab.url);
-  if (cookies.length === 0) {
-    status.textContent = `Site: ${url.hostname} — No cookies found`;
-    return;
-  }
-
-  // Summary counts
+  const cookies = await chrome.cookies.getAll({ url: tab.url });
+  
+  // Restore the counter from the Main version.
   let persistent = 0, session = 0, secure = 0, httpOnly = 0;
   for (const c of cookies) {
     if (c.session) session++; else persistent++;
     if (c.secure) secure++;
     if (c.httpOnly) httpOnly++;
   }
+  document.getElementById("cookieStatus").innerText = 
+    `${cookies.length} cookies • ${persistent} persistent / ${session} session • ${secure} Secure • ${httpOnly} HttpOnly`;
 
-  status.textContent =
-    `Site: ${url.hostname} — ${cookies.length} cookie(s) • ` +
-    `${persistent} persistent / ${session} session • ` +
-    `${secure} Secure • ${httpOnly} HttpOnly`;
-
-  // Display cookies with delete button
   for (const c of cookies) {
     const li = document.createElement("li");
     li.className = "cookie-item";
+    
+    const risk = riskMap[c.name] || "Safety";
+    let color = "#28a745"; 
+    if (risk === "High Risk") color = "#e63946"; 
+    else if (risk === "Tracking") color = "#ffc107";
 
-    const header = document.createElement("div");
-    header.className = "cookie-header";
+    li.style.borderLeft = `5px solid ${color}`;
+    
+    // Expiration date formatting
+    const expiry = !c.expirationDate ? "Session" : new Date(c.expirationDate * 1000).toLocaleString();
 
-    const name = document.createElement("div");
-    name.className = "cookie-name";
-    name.textContent = c.name;
+    li.innerHTML = `
+      <div class="cookie-header">
+        <strong class="cookie-name">${c.name} <small style="color:${color}">[${risk}]</small></strong>
+        <div class="actions">
+          <button class="info-btn">Info</button>
+          <button class="del-btn">Delete</button>
+        </div>
+      </div>
+      <div class="mono">
+        Domain: ${c.domain}<br>
+        Expires: ${expiry}<br>
+        Secure: ${c.secure ? "Yes" : "No"} | HttpOnly: ${c.httpOnly ? "Yes" : "No"} | SameSite: ${c.sameSite || "?"}
+      </div>
+    `;
 
-    const delBtn = document.createElement("button");
-    delBtn.className = "delete-btn";
-    delBtn.textContent = "Delete";
-    delBtn.title = "Remove this cookie";
-    delBtn.addEventListener("click", () => {
-      if (confirm(`Really delete cookie "${c.name}"?`)) {
-        deleteCookie(c, tab.url);
-      }
-    });
+    li.querySelector(".info-btn").onclick = async (e) => {
+      const btn = e.target;
+      btn.disabled = true;
+      btn.innerText = "...";
+      const info = await getCookieInfo(c.name, c.domain);
+      const div = li.querySelector(".description") || document.createElement("div");
+      div.className = "description";
+      div.innerText = info;
+      li.appendChild(div);
+      btn.disabled = false;
+      btn.innerText = "Info";
+    };
 
-    header.appendChild(name);
-    header.appendChild(delBtn);
-
-    const meta = document.createElement("div");
-    meta.className = "meta";
-    meta.innerHTML =
-      `Domain: <span class="mono">${c.domain}</span><br>` +
-      `Path: <span class="mono">${c.path}</span><br>` +
-      `Expires: ${formatExpiry(c)}<br>` +
-      `Secure: ${c.secure ? "Yes" : "No"} | HttpOnly: ${c.httpOnly ? "Yes" : "No"} | SameSite: ${c.sameSite || "?"}`;
-
-    li.appendChild(header);
-    li.appendChild(meta);
+    li.querySelector(".del-btn").onclick = () => {
+      if (confirm(`Delete ${c.name}?`)) chrome.cookies.remove({ url: tab.url, name: c.name }, () => refreshAll());
+    };
     ul.appendChild(li);
   }
 }
 
 async function refreshAll() {
-  const tab = await getActiveTab();
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
-
-  // Third-party domains (from background)
   chrome.runtime.sendMessage({ type: "GET_TAB_DATA", tabId: tab.id }, (res) => {
-    renderDomains(res);
+    if (res) {
+      document.getElementById("meta").innerText = `3rd parties: ${res.thirdPartyCount}`;
+      document.getElementById("list").innerHTML = res.top.map(i => `<li>${i.domain} (${i.count})</li>`).join("");
+    }
   });
-
-  // Cookies
-  await loadCookiesForTab(tab);
+  loadCookiesForTab(tab);
 }
 
-// Initial load
-refreshAll();
-
-document.getElementById("refresh")?.addEventListener("click", refreshAll);
+document.addEventListener('DOMContentLoaded', () => {
+  refreshAll();
+  document.getElementById("saveKey").onclick = () => {
+    const key = document.getElementById("apiKeyInput").value;
+    chrome.storage.local.set({ geminiKey: key }, () => alert("Key Saved!"));
+  };
+  document.getElementById("aiAnalyze").onclick = async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const cookies = await chrome.cookies.getAll({ url: tab.url });
+    const resDiv = document.getElementById("aiResponse");
+    resDiv.style.display = "block";
+    resDiv.innerText = "Gemini 3 Flash is classifying...";
+    const results = await getAIRiskBatch(cookies.map(c => c.name));
+    if (results) {
+      riskMap = results;
+      resDiv.innerText = "Classification complete!";
+      loadCookiesForTab(tab);
+    }
+  };
+  document.getElementById("refresh").onclick = refreshAll;
+});
