@@ -3,109 +3,51 @@
   <head>
     <meta charset="utf-8" />
     <style>
-      body { font-family: system-ui, sans-serif; width: 360px; margin: 12px; line-height: 1.4; }
+      body { font-family: system-ui, sans-serif; width: 360px; margin: 12px; line-height: 1.4; background: #fdfdfd; }
       h1 { font-size: 16px; margin: 0 0 8px; }
-      .meta, .status { font-size: 12px; opacity: 0.9; margin-bottom: 10px; }
-      .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; background: #e0e0e0; }
-      ul { padding-left: 0; margin: 8px 0; list-style: none; }
-      li { margin: 6px 0; }
+      .meta, .status { font-size: 11px; opacity: 0.85; margin-bottom: 8px; }
+      .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11px; background: #eee; font-weight: bold; }
+      
+      #api-key-section { margin-bottom: 12px; padding: 10px; background: #fff3cd; border-radius: 6px; border: 1px solid #ffeeba; }
+      input { width: 92%; padding: 6px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 10px; }
+      
+      button { cursor: pointer; border-radius: 4px; border: none; padding: 6px 12px; font-size: 11px; font-weight: bold; }
+      #aiAnalyze { background: #0060df; color: white; }
+      #refresh { background: #e0e0e0; color: #333; }
+      .del-btn { background: #e63946; color: white; }
+      .info-btn { background: #4dabf7; color: white; margin-right: 5px; }
 
-      #api-key-section { 
-        margin-bottom: 16px; 
-        padding: 10px; 
-        background: #fff3cd; 
-        border-radius: 6px; 
-        border: 1px solid #ffeeba; 
+      .cookie-item { 
+        background: white; border: 1px solid #eee; border-radius: 6px; 
+        padding: 10px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       }
-      #api-key-section.hidden { display: none; }
-      input[type="text"] { 
-        width: 100%; 
-        padding: 8px; 
-        margin: 8px 0; 
-        border: 1px solid #ccc; 
-        border-radius: 4px; 
-        font-family: monospace; 
-      }
-      button.primary { 
-        background: #0060df; 
-        color: white; 
-        border: none; 
-        padding: 8px 16px; 
-        border-radius: 6px; 
-        cursor: pointer; 
-      }
-      button.primary:hover { background: #0050bb; }
-
-      h2 { font-size: 14px; margin: 16px 0 6px; }
-      .cookie-item {
-        padding: 10px;
-        background: #f9f9f9;
-        border: 1px solid #eee;
-        border-radius: 6px;
-        margin: 10px 0;
-      }
-      .cookie-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 6px;
-      }
-      .cookie-name { font-size: 14px; font-weight: 600; margin: 0; }
-      .actions button {
-        font-size: 11px;
-        padding: 3px 8px;
-        margin-left: 6px;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      .delete-btn { background: #e63946; color: white; border: none; }
-      .info-btn { background: #4dabf7; color: white; border: none; }
-      .info-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-      .description { 
-        margin-top: 8px; 
-        font-size: 12px; 
-        background: #e3f2fd; 
-        padding: 8px; 
-        border-radius: 4px; 
-        white-space: pre-wrap; 
-      }
-      .row { text-align: center; margin: 12px 0; }
-      .hidden { display: none !important; }
-      .primary { background: #0060df; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
-      .primary:hover { background: #0050bb; }
+      .cookie-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+      .cookie-name { font-size: 13px; font-weight: 600; }
+      .description { margin-top: 8px; font-size: 11px; background: #e3f2fd; padding: 8px; border-radius: 4px; color: #004085; }
+      .mono { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 10px; opacity: 0.8; }
+      
+      #aiResponse { font-size: 11px; padding: 8px; background: #e7f3ff; border-radius: 4px; margin: 10px 0; display: none; color: #004085; border: 1px solid #b8daff; }
+      .row { display: flex; gap: 8px; margin: 12px 0; justify-content: center; }
     </style>
   </head>
  <body>
   <div style="display: flex; justify-content: space-between; align-items: center;">
     <h1>Streetlight Ledger</h1>
-    <button id="settings-btn" style="font-size: 12px; padding: 4px 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
-      Settings
-    </button>
-  </div>
-
-  <div id="api-key-section" class="hidden">
-    <div class="meta" style="margin-bottom: 8px;">Gemini API key for cookie explanations</div>
-    <input type="text" id="api-key-input" placeholder="Enter your Gemini API key (ai.google.dev)" value="" />
-    <div style="margin: 10px 0; display: flex; gap: 8px;">
-      <button class="primary" id="save-key">Save Key</button>
-      <button id="clear-key" style="background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">Clear Key</button>
+    <div id="api-key-section">
+      <input type="password" id="apiKeyInput" placeholder="Paste Gemini API Key" />
+      <button id="saveKey" style="background: #28a745; color: white; width: 100%; margin-top: 5px;">Save Key</button>
     </div>
-    <div id="key-status" style="font-size:12px; min-height: 16px;"></div>
-  </div>
-
-  <div class="meta" id="meta">Loading…</div>
-  <div class="pill" id="fog"></div>
-
-  <ul id="list"></ul>
-
-  <div class="row">
-    <button id="refresh">Refresh</button>
-  </div>
-
-  <h2>Cookies</h2>
-  <div class="status" id="cookieStatus">Loading cookies…</div>
-  <ul id="cookieList"></ul>
-
-  <script src="popup.js"></script>
-</body>
+    <div class="meta" id="meta">Scanning site...</div>
+    <div class="pill" id="fog">Low Fog</div>
+    <ul id="list" style="font-size: 11px; color: #555;"></ul>
+    <div class="row">
+      <button id="refresh">Refresh</button>
+      <button id="aiAnalyze">AI Risk Analysis</button>
+    </div>
+    <div id="aiResponse"></div>
+    <h2 style="font-size: 13px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">Cookies</h2>
+    <div class="status" id="cookieStatus" style="font-size: 10px; margin-bottom: 10px;"></div>
+    <ul id="cookieList"></ul>
+    <script src="popup.js"></script>
+  </body>
 </html>
