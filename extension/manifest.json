@@ -3,7 +3,7 @@
   "name": "Streetlight Ledger",
   "version": "0.2.0",
   "description": "Shows third-party domains a page contacts (tracking intensity).",
-  "permissions": ["tabs", "webRequest", "cookies"],
+  "permissions": ["tabs", "webRequest", "cookies", "storage"],
   "host_permissions": ["<all_urls>"],
   "background": { "service_worker": "background.js" },
   "action": {

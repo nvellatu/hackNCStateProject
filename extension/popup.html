@@ -3,36 +3,109 @@
   <head>
     <meta charset="utf-8" />
     <style>
-      body { font-family: system-ui, sans-serif; width: 320px; margin: 12px; }
-      h1 { font-size: 14px; margin: 0 0 6px; }
-      .meta { font-size: 12px; opacity: 0.85; margin-bottom: 8px; }
-      .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; background: #eee; }
-      ul { padding-left: 16px; margin: 8px 0 0; }
-      li { font-size: 12px; line-height: 1.4; margin: 4px 0; }
+      body { font-family: system-ui, sans-serif; width: 360px; margin: 12px; line-height: 1.4; }
+      h1 { font-size: 16px; margin: 0 0 8px; }
+      .meta, .status { font-size: 12px; opacity: 0.9; margin-bottom: 10px; }
+      .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; background: #e0e0e0; }
+      ul { padding-left: 0; margin: 8px 0; list-style: none; }
+      li { margin: 6px 0; }
 
-      h2 { font-size: 12px; margin: 12px 0 6px; }
-      .cookie-item { margin: 8px 0; }
-      .cookie-name { font-size: 12px; font-weight: 600; }
-      .meta { font-size: 11px; opacity: 0.85; line-height: 1.3; }
-      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+      #api-key-section { 
+        margin-bottom: 16px; 
+        padding: 10px; 
+        background: #fff3cd; 
+        border-radius: 6px; 
+        border: 1px solid #ffeeba; 
+      }
+      #api-key-section.hidden { display: none; }
+      input[type="text"] { 
+        width: 100%; 
+        padding: 8px; 
+        margin: 8px 0; 
+        border: 1px solid #ccc; 
+        border-radius: 4px; 
+        font-family: monospace; 
+      }
+      button.primary { 
+        background: #0060df; 
+        color: white; 
+        border: none; 
+        padding: 8px 16px; 
+        border-radius: 6px; 
+        cursor: pointer; 
+      }
+      button.primary:hover { background: #0050bb; }
+
+      h2 { font-size: 14px; margin: 16px 0 6px; }
+      .cookie-item {
+        padding: 10px;
+        background: #f9f9f9;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        margin: 10px 0;
+      }
+      .cookie-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+      .cookie-name { font-size: 14px; font-weight: 600; margin: 0; }
+      .actions button {
+        font-size: 11px;
+        padding: 3px 8px;
+        margin-left: 6px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .delete-btn { background: #e63946; color: white; border: none; }
+      .info-btn { background: #4dabf7; color: white; border: none; }
+      .info-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .description { 
+        margin-top: 8px; 
+        font-size: 12px; 
+        background: #e3f2fd; 
+        padding: 8px; 
+        border-radius: 4px; 
+        white-space: pre-wrap; 
+      }
+      .row { text-align: center; margin: 12px 0; }
+      .hidden { display: none !important; }
+      .primary { background: #0060df; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+      .primary:hover { background: #0050bb; }
     </style>
   </head>
-  <body>
+ <body>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
     <h1>Streetlight Ledger</h1>
-    <div class="meta" id="meta">Loading…</div>
-    <div class="pill" id="fog"></div>
+    <button id="settings-btn" style="font-size: 12px; padding: 4px 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Settings
+    </button>
+  </div>
 
-    <ul id="list"></ul>
-
-    <div class="row">
-      <button id="refresh">Refresh</button>
+  <div id="api-key-section" class="hidden">
+    <div class="meta" style="margin-bottom: 8px;">Gemini API key for cookie explanations</div>
+    <input type="text" id="api-key-input" placeholder="Enter your Gemini API key (ai.google.dev)" value="" />
+    <div style="margin: 10px 0; display: flex; gap: 8px;">
+      <button class="primary" id="save-key">Save Key</button>
+      <button id="clear-key" style="background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">Clear Key</button>
     </div>
+    <div id="key-status" style="font-size:12px; min-height: 16px;"></div>
+  </div>
 
-    <h2>Cookies</h2>
-    <div class="meta" id="cookieStatus">Loading cookies…</div>
-    <ul id="cookieList"></ul>
+  <div class="meta" id="meta">Loading…</div>
+  <div class="pill" id="fog"></div>
 
-    <script src="popup.js"></script>
-  </body>
-  
+  <ul id="list"></ul>
+
+  <div class="row">
+    <button id="refresh">Refresh</button>
+  </div>
+
+  <h2>Cookies</h2>
+  <div class="status" id="cookieStatus">Loading cookies…</div>
+  <ul id="cookieList"></ul>
+
+  <script src="popup.js"></script>
+</body>
 </html>
