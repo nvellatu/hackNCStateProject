@@ -160,6 +160,4 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.tabs.create({ url: "https://aistudio.google.com/app/api-keys" });
   };
 });
-document.getElementById("playGame").onclick = () => {
-  chrome.tabs.create({ url: chrome.runtime.getURL("game.html") });
-};
+
