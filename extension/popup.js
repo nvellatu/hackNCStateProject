@@ -58,11 +58,20 @@ async function loadCookiesForTab(tab) {
     const li = document.createElement("li");
     li.className = "cookie-item";
     
-    const risk = riskMap[c.name] || "Safety";
-    let color = "#28a745"; 
-    if (risk === "High Risk") color = "#e63946"; 
-    else if (risk === "Tracking") color = "#ffc107";
+    const risk = riskMap[c.name];
+    let color = "#6c757d";                  // neutral gray
+    let riskLabel = "";
 
+    if (risk === "High Risk") {
+      color = "#e63946";
+      riskLabel = "High Risk";
+    } else if (risk === "Tracking") {
+      color = "#ffc107";
+      riskLabel = "Tracking";
+    } else if (risk === "Safe") {
+      color = "#28a745";
+      riskLabel = "Safe";
+    }
     li.style.borderLeft = `5px solid ${color}`;
     
     // Expiration date formatting
@@ -70,7 +79,10 @@ async function loadCookiesForTab(tab) {
 
     li.innerHTML = `
       <div class="cookie-header">
-        <strong class="cookie-name">${c.name} <small style="color:${color}">[${risk}]</small></strong>
+        <strong class="cookie-name">
+          ${c.name}
+          ${riskLabel ? `<small style="color:${color}">[${riskLabel}]</small>` : ""}
+        </strong>
         <div class="actions">
           <button class="info-btn">Info</button>
           <button class="del-btn">Delete</button>
