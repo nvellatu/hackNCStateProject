@@ -4,7 +4,32 @@
     <meta charset="utf-8" />
     <style>
       body { font-family: system-ui, sans-serif; width: 360px; margin: 12px; line-height: 1.4; background: #fdfdfd; }
-      h1 { font-size: 16px; margin: 0 0 8px; }
+      
+      /* New header with title + game button */
+      #header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      h1 { font-size: 16px; margin: 0; }
+      
+      #gameBtn {
+        background: none;
+        border: none;
+        font-size: 28px;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 8px;
+        transition: background 0.2s;
+      }
+      #gameBtn:hover {
+        background: rgba(0,0,0,0.05);
+      }
+      #gameBtn:active {
+        transform: scale(0.95);
+      }
+      
       .meta, .status { font-size: 11px; opacity: 0.85; margin-bottom: 8px; }
       .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11px; background: #eee; font-weight: bold; }
       
@@ -14,6 +39,7 @@
       button { cursor: pointer; border-radius: 4px; border: none; padding: 6px 12px; font-size: 11px; font-weight: bold; }
       #aiAnalyze { background: #0060df; color: white; }
       #refresh { background: #e0e0e0; color: #333; }
+      #cleanHighRisk { background:#e63946;color:white; } /* if you have this */
       .del-btn { background: #e63946; color: white; }
       .info-btn { background: #4dabf7; color: white; margin-right: 5px; }
 
@@ -31,7 +57,13 @@
     </style>
   </head>
   <body>
-    <h1>Streetlight Ledger</h1>
+    <!-- New header with emoji button in top right -->
+    <div id="header">
+      <h1>Streetlight Ledger</h1>
+      <button id="gameBtn" title="Play Whac-a-Tracker 🍪🔨">🍪🔨</button>
+    </div>
+
+    <!-- Rest of your existing content (unchanged) -->
     <div id="api-key-section">
       <input type="password" id="apiKeyInput" placeholder="Paste Gemini API Key" />
       <button id="saveKey" style="background: #28a745; color: white; width: 100%; margin-top: 5px;">Save Key</button>
@@ -42,7 +74,8 @@
     <div class="row">
       <button id="refresh">Refresh</button>
       <button id="aiAnalyze">AI Risk Analysis</button>
-      <button id="playGame" style="background:#ff6b6b;color:white;">Play Whac-a-Tracker 🍪🔨</button>
+      <!-- Remove any old Play Game button from here -->
+      <!-- <button id="cleanHighRisk">Clean High-Risk</button> if you have it -->
     </div>
     <div id="aiResponse"></div>
     <h2 style="font-size: 13px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">Cookies</h2>
