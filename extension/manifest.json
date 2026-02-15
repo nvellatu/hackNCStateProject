@@ -1,15 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "Streetlight Ledger - AI Classify",
-  "version": "1.0.0",
-  "description": "Analyzes cookie risks with Gemini 3 Flash AI.",
+  "name": "Streetlight Ledger",
+  "version": "0.2.0",
+  "description": "Shows third-party domains a page contacts (tracking intensity).",
   "permissions": ["tabs", "webRequest", "cookies", "storage"],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "host_permissions": ["<all_urls>"],
   "background": { "service_worker": "background.js" },
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_title": "Streetlight Ledger"
   },
   "icons": {
     "128": "DetectiveCookie.png"
