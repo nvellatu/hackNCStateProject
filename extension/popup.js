@@ -88,13 +88,13 @@ async function loadCookiesForTab(tab) {
     return;
   }
 
-  const url = new URL(tab.url);
+  const urlObj = new URL(tab.url);
   if (cookies.length === 0) {
-    status.textContent = `Site: ${url.hostname} — No cookies found`;
+    status.textContent = `Site: ${urlObj.hostname} — No cookies found`;
     return;
   }
 
-  // Summary counts
+  // Summary counts (your existing logic)
   let persistent = 0, session = 0, secure = 0, httpOnly = 0;
   for (const c of cookies) {
     if (c.session) session++; else persistent++;
@@ -103,11 +103,10 @@ async function loadCookiesForTab(tab) {
   }
 
   status.textContent =
-    `Site: ${url.hostname} — ${cookies.length} cookie(s) • ` +
+    `Site: ${urlObj.hostname} — ${cookies.length} cookie(s) • ` +
     `${persistent} persistent / ${session} session • ` +
     `${secure} Secure • ${httpOnly} HttpOnly`;
 
-  // Display cookies with delete button
   for (const c of cookies) {
     const li = document.createElement("li");
     li.className = "cookie-item";
@@ -119,26 +118,50 @@ async function loadCookiesForTab(tab) {
     name.className = "cookie-name";
     name.textContent = c.name;
 
+    const actions = document.createElement("div");
+    actions.className = "actions";
+
     const delBtn = document.createElement("button");
-    delBtn.className = "delete-btn";
+    delBtn.className = "delete-btn actions-btn";
     delBtn.textContent = "Delete";
-    delBtn.title = "Remove this cookie";
     delBtn.addEventListener("click", () => {
-      if (confirm(`Really delete cookie "${c.name}"?`)) {
-        deleteCookie(c, tab.url);
+      if (confirm(`Delete cookie "${c.name}"?`)) {
+        deleteCookie(c, tab.url); // your existing delete function
       }
     });
 
+    const infoBtn = document.createElement("button");
+    infoBtn.className = "info-btn actions-btn";
+    infoBtn.textContent = "Info";
+    infoBtn.disabled = !GEMINI_API_KEY;
+    infoBtn.title = GEMINI_API_KEY ? "Get AI explanation" : "Set API key first";
+    infoBtn.addEventListener("click", async () => {
+      infoBtn.disabled = true;
+      infoBtn.textContent = "Loading...";
+      const descDiv = li.querySelector(".description") || document.createElement("div");
+      descDiv.className = "description";
+      descDiv.textContent = "Thinking...";
+      li.appendChild(descDiv);
+
+      const description = await getCookieDescription(
+        c.name,
+        c.domain,
+        c.value || ""
+      );
+      descDiv.textContent = description;
+      infoBtn.textContent = "Info";
+      infoBtn.disabled = false;
+    });
+
+    actions.appendChild(infoBtn);
+    actions.appendChild(delBtn);
+
     header.appendChild(name);
-    header.appendChild(delBtn);
+    header.appendChild(actions);
 
     const meta = document.createElement("div");
     meta.className = "meta";
-    meta.innerHTML =
-      `Domain: <span class="mono">${c.domain}</span><br>` +
-      `Path: <span class="mono">${c.path}</span><br>` +
-      `Expires: ${formatExpiry(c)}<br>` +
-      `Secure: ${c.secure ? "Yes" : "No"} | HttpOnly: ${c.httpOnly ? "Yes" : "No"} | SameSite: ${c.sameSite || "?"}`;
+    meta.innerHTML = `Domain: <span class="mono">${c.domain}</span><br>Path: <span class="mono">${c.path}</span><br>Expires: ${formatExpiry(c)}<br>Secure: ${c.secure ? "Yes" : "No"} | HttpOnly: ${c.httpOnly ? "Yes" : "No"} | SameSite: ${c.sameSite || "?"}`;
 
     li.appendChild(header);
     li.appendChild(meta);
@@ -150,15 +173,108 @@ async function refreshAll() {
   const tab = await getActiveTab();
   if (!tab) return;
 
-  // Third-party domains (from background)
   chrome.runtime.sendMessage({ type: "GET_TAB_DATA", tabId: tab.id }, (res) => {
     renderDomains(res);
   });
 
-  // Cookies
   await loadCookiesForTab(tab);
 }
 
+let GEMINI_API_KEY = null;
+
+async function loadApiKey() {
+  const data = await chrome.storage.local.get("geminiApiKey");
+  GEMINI_API_KEY = data.geminiApiKey || null;
+  
+  const section = document.getElementById("api-key-section");
+  if (GEMINI_API_KEY) {
+    section.classList.add("hidden");
+  } else {
+    section.classList.remove("hidden");
+  }
+}
+
+async function saveApiKey() {
+  const input = document.getElementById("api-key-input");
+  const status = document.getElementById("key-status");
+  const key = input.value.trim();
+
+  if (!key) {
+    status.textContent = "Please enter a key.";
+    status.style.color = "red";
+    return;
+  }
+
+  try {
+    await chrome.storage.local.set({ geminiApiKey: key });
+    GEMINI_API_KEY = key;
+    document.getElementById("api-key-section").classList.add("hidden");
+    status.textContent = "Key saved! Refreshing explanations...";
+    status.style.color = "green";
+    // Optional: re-render cookies to enable buttons
+    const tab = await getActiveTab();
+    if (tab) await loadCookiesForTab(tab);
+  } catch (err) {
+    status.textContent = "Error saving key: " + err.message;
+    status.style.color = "red";
+  }
+}
+
+async function getCookieDescription(cookieName, cookieDomain, cookieValuePreview = "") {
+  if (!GEMINI_API_KEY) return "API key not set.";
+
+  const prompt = `
+You are a privacy expert. Given this cookie from website "${cookieDomain}":
+
+Cookie name: ${cookieName}
+Value preview: ${cookieValuePreview.substring(0, 60)}${cookieValuePreview.length > 60 ? "..." : ""}
+
+Provide a **short, human-readable** 5-15 word description of what this cookie is used for.
+If unknown/common, say so.
+Examples:
+- "_ga": Google Analytics tracking ID for user sessions.
+- "session_id": Temporary session identifier for logged-in state.
+Do not speculate wildly.
+`.trim();
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 500,
+            topP: 0.95,
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || response.statusText);
+    }
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "No description available.";
+    return text;
+  } catch (err) {
+    console.error("Gemini error:", err);
+    return `Error: ${err.message.includes("API key") ? "Invalid or expired API key" : err.message}`;
+  }
+}
+
+async function init() {
+  await loadApiKey();
+  document.getElementById("save-key").addEventListener("click", saveApiKey);
+  document.getElementById("refresh")?.addEventListener("click", refreshAll);
+  await refreshAll();
+}
+init();
 // Initial load
 refreshAll();
 
