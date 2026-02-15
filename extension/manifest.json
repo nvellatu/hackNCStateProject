@@ -13,5 +13,20 @@
   },
   "icons": {
     "128": "DetectiveCookie.png"
-  }
+  },
+  "sandbox": {
+    "pages": ["game.html"]
+  },
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' https: data:",
+    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' https://www.gstatic.com https://apis.google.com; object-src 'self'"
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["game.html", "game.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

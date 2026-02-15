@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Whac-a-Tracker 🍪🔨</title>
+  <style>
+    body { margin:0; font-family: system-ui; background: #8B4513; color: white; text-align: center; cursor: url('https://cdn.dribbble.com/userupload/20445658/file/original-017e9895b07571c7711716c732688574.png'), auto; }
+    h1 { font-size: 24px; margin: 20px; }
+    #gameContainer { 
+      width: 600px; 
+      height: 600px; 
+      margin: 0 auto; 
+      background: #654321; 
+      border-radius: 20px; 
+      position: relative; 
+      overflow: hidden; 
+    }
+    .hole { 
+      position: absolute; 
+      width: 100px;     /* Slightly larger hole for better visuals */
+      height: 100px; 
+      background: #333; 
+      border-radius: 50%; 
+      bottom: -60px; 
+      box-shadow: inset 0 10px 20px black; 
+    }
+    .cookie { 
+      position: absolute; 
+      width: 80px;     /* Bigger cookie */
+      height: 80px; 
+      background: #D2691E; 
+      border-radius: 50%; 
+      bottom: 10px; 
+      left: 10px; 
+      transition: transform 0.3s ease-out; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-weight: bold; 
+      font-size: 12px; 
+      color: black; 
+      box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+      text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+    }
+    .cookie.safe { background: #28a745; }
+    .cookie.tracking { background: #ffc107; color: black; }
+    .cookie.highrisk { background: #e63946; }
+    .cookie.up { transform: translateY(-60px); } /* Adjusted for larger size */
+    #score, #timer { font-size: 28px; margin: 15px; font-weight: bold; }
+    #tip { 
+      position: absolute; 
+      top: 50%; 
+      left: 50%; 
+      transform: translate(-50%,-50%); 
+      background: rgba(0,0,0,0.8); 
+      padding: 20px 30px; 
+      border-radius: 12px; 
+      display: none; 
+      font-size: 20px; 
+      max-width: 80%;
+      pointer-events: none;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    #leaderboard { margin: 30px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; }
+    button { padding: 12px 30px; font-size: 20px; background: #0060df; color: white; border: none; border-radius: 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Whac-a-Tracker!</h1>
+  <div id="score">Score: 0</div>
+  <div id="timer">Time: 60</div>
+  <div id="gameContainer"></div>
+  <div id="tip"></div>
+  <button id="startBtn">Start Game</button>
+  <div id="leaderboard"><h2>Global Leaderboard</h2><ol id="leaders"></ol></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script src="game.js"></script>
+</body>
+</html>
