@@ -58,10 +58,19 @@ async function loadCookiesForTab(tab) {
     const li = document.createElement("li");
     li.className = "cookie-item";
     
-    const risk = riskMap[c.name] || "Safety";
-    let color = "#28a745"; 
-    if (risk === "High Risk") color = "#e63946"; 
-    else if (risk === "Tracking") color = "#ffc107";
+    // Changed: default to "Unclassified" instead of "Safety"
+    const risk = riskMap[c.name] || "Unclassified";
+    
+    // Changed: start with neutral gray, then override based on actual risk
+    let color = "#6c757d"; // bootstrap secondary gray - neutral for unclassified
+    if (risk === "Safe") {
+      color = "#28a745";      // green
+    } else if (risk === "Tracking") {
+      color = "#ffc107";      // amber/yellow
+    } else if (risk === "High Risk") {
+      color = "#e63946";      // red
+    }
+    // "Unclassified" (or anything unexpected) stays gray
 
     li.style.borderLeft = `5px solid ${color}`;
     
