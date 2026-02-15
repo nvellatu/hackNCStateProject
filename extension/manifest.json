@@ -1,16 +1,43 @@
 {
   "manifest_version": 3,
-  "name": "Streetlight Ledger - AI Classify",
+  "name": "Lamplight",
   "version": "1.0.0",
-  "description": "Analyzes cookie risks with Gemini 3 Flash AI.",
-  "permissions": ["tabs", "webRequest", "cookies", "storage"],
+  "description": "Urban-noir privacy intelligence: Scope links before you click. Includes Streetlight Ledger AI cookie classification.",
+  
+  "background0": {
+    "service_worker": "background0.js"
+  },
+
+  "background": {
+    "service_worker": "background/background.js"
+  },
+
+  "permissions": [
+    "contextMenus",
+    "tabs",
+    "scripting",
+    "storage",
+    "cookies",
+    "webRequest"
+  ],
+
   "host_permissions": [
     "<all_urls>"
   ],
-  "background": { "service_worker": "background.js" },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/scopeOverlay.js"],
+      "css": ["content/overlayStyles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+
   "action": {
     "default_popup": "popup.html"
   },
+
   "icons": {
     "128": "DetectiveCookie.png"
   }

@@ -1,0 +1,181 @@
+#lamplight-scope-overlay,
+#lamplight-dossier-overlay {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 999999;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+/* Card */
+.lamplight-card {
+  width: 340px;
+  background: #111;
+  color: #f4f4f4;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  overflow: hidden;
+  border: 1px solid #2a2a2a;
+}
+
+/* Header */
+.lamplight-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1b1b1b;
+  padding: 10px 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.lamplight-header button {
+  background: transparent;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.lamplight-header button:hover {
+  color: #fff;
+}
+
+/* Sections */
+.lamplight-section {
+  padding: 10px 12px;
+  border-top: 1px solid #222;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: #b0b0b0;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.value {
+  font-size: 13px;
+  word-break: break-word;
+  color: #e8e8e8;
+}
+
+/* Lists */
+ul {
+  margin: 6px 0 0 14px;
+  padding: 0;
+}
+
+li {
+  font-size: 13px;
+  margin-bottom: 4px;
+  color: #d0d0d0;
+}
+
+/* Stat rows */
+.scope-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #1c1c1c;
+}
+
+.scope-row:last-child {
+  border-bottom: none;
+}
+
+.scope-label {
+  font-size: 12px;
+  color: #9a9a9a;
+  cursor: help;
+}
+
+.scope-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: #f0f0f0;
+}
+
+.scope-row:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+/* Fog score pill */
+.fog-pill {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 6px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.fog-low {
+  background: #1c3a26;
+  color: #9fe3b0;
+}
+
+.fog-med {
+  background: #3a2c14;
+  color: #e7c36b;
+}
+
+.fog-high {
+  background: #3a1717;
+  color: #ff8a8a;
+}
+
+/* Signals styling */
+.signal-list li {
+  font-size: 11px;
+  color: #b5b5b5;
+}
+
+.muted {
+  font-size: 12px;
+  font-style: italic;
+  color: #878787;
+}
+
+
+/* --- AI classification badge --- */
+
+#lamplight-dossier-overlay .lamplight-badge {
+  font-size: 11.5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  white-space: nowrap;
+}
+
+#lamplight-dossier-overlay .badge-safe {
+  background: rgba(46, 160, 67, 0.18);
+  color: #8ee7a3;
+  border-color: rgba(46,160,67,0.35);
+}
+
+#lamplight-dossier-overlay .badge-tracking {
+  background: rgba(214, 153, 30, 0.18);
+  color: #ffd27a;
+  border-color: rgba(214,153,30,0.35);
+}
+
+#lamplight-dossier-overlay .badge-highrisk {
+  background: rgba(220, 38, 38, 0.18);
+  color: #ff9b9b;
+  border-color: rgba(220,38,38,0.35);
+}
+
+#lamplight-dossier-overlay .badge-unknown {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.75);
+}
+
+#lamplight-dossier-overlay .badge-loading {
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.5);
+}
