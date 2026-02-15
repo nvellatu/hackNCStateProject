@@ -10,7 +10,14 @@ async function getApiKey() {
 async function getAIRiskBatch(cookieNames) {
   const key = await getApiKey();
   if (!key || cookieNames.length === 0) return null;
-  const prompt = `Analyze: ${cookieNames.join(", ")}. Return ONLY JSON: {"cookieName": "Safe"|"Tracking"|"High Risk"}`;
+  const prompt = `You are a privacy expert. Classify each cookie name as:
+    - "Safe": Strictly necessary/functional (e.g., login, preferences).
+    - "Tracking": Analytics, advertising, behavioral.
+    - "High Risk": Cross-site tracking, fingerprinting, known invasive.
+    - "Unknown": Can't determine.
+    Examples: _ga → Tracking, PHPSESSID → Safe, __cfduid → Safe.
+    Analyze these cookie names from a website: ${cookieNames.join(", ")}.
+    Return ONLY valid JSON object like: {"cookie1": "Tracking", "cookie2": "Safe"}`;
   try {
     const res = await fetch(`${API_URL}?key=${key}`, {
       method: "POST",
