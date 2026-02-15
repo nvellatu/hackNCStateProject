@@ -69,7 +69,7 @@ async function loadCookiesForTab(tab) {
     const risk = riskMap[c.name] || "Unclassified";
     
     // Changed: start with neutral gray, then override based on actual risk
-    let color = "#6c757d"; // bootstrap secondary gray - neutral for unclassified
+    let color = "#bbbbbb"; // bootstrap secondary gray - neutral for unclassified
     if (risk === "Safe") {
       color = "#28a745";      // green
     } else if (risk === "Tracking") {
@@ -86,7 +86,9 @@ async function loadCookiesForTab(tab) {
 
     li.innerHTML = `
       <div class="cookie-header">
-        <strong class="cookie-name">${c.name} <small style="color:${color}">[${risk}]</small></strong>
+        <strong class="cookie-name" title="${c.name} [${risk}]">
+          ${c.name} <small style="color:${color}">[${risk}]</small>
+        </strong>
         <div class="actions">
           <button class="info-btn">Info</button>
           <button class="del-btn">Delete</button>
