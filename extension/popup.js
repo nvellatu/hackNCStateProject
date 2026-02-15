@@ -65,25 +65,25 @@ async function loadCookiesForTab(tab) {
     const li = document.createElement("li");
     li.className = "cookie-item";
     
-    // Changed: default to "Unclassified" instead of "Safety"
+    // Statues show "Unclassified" 
     const risk = riskMap[c.name] || "Unclassified";
     
-    // Changed: start with neutral gray, then override based on actual risk
-    let color = "#bbbbbb"; // bootstrap secondary gray - neutral for unclassified
+    // Color for Classification
+    let color = "#bbbbbb";
     if (risk === "Safe") {
-      color = "#28a745";      // green
+      color = "#28a745";
     } else if (risk === "Tracking") {
-      color = "#ffc107";      // amber/yellow
+      color = "#ffc107";
     } else if (risk === "High Risk") {
-      color = "#e63946";      // red
+      color = "#e63946";
     }
-    // "Unclassified" (or anything unexpected) stays gray
 
     li.style.borderLeft = `5px solid ${color}`;
     
     // Expiration date formatting
     const expiry = !c.expirationDate ? "Session" : new Date(c.expirationDate * 1000).toLocaleString();
 
+    // Render cookie item and inject risk data
     li.innerHTML = `
       <div class="cookie-header">
         <strong class="cookie-name" title="${c.name} [${risk}]">
@@ -101,6 +101,7 @@ async function loadCookiesForTab(tab) {
       </div>
     `;
 
+    // Fetch cookie explanation from API
     li.querySelector(".info-btn").onclick = async (e) => {
       const btn = e.target;
       btn.disabled = true;
@@ -121,6 +122,7 @@ async function loadCookiesForTab(tab) {
   }
 }
 
+// Pull fresh data for current tab
 async function refreshAll() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
@@ -133,12 +135,17 @@ async function refreshAll() {
   loadCookiesForTab(tab);
 }
 
+// Setup listeners
 document.addEventListener('DOMContentLoaded', () => {
   refreshAll();
+
+  // Save key to local storage
   document.getElementById("saveKey").onclick = () => {
     const key = document.getElementById("apiKeyInput").value;
     chrome.storage.local.set({ geminiKey: key }, () => alert("Key Saved!"));
   };
+
+  // Run bulk classification with Gemini 3 Flash
   document.getElementById("aiAnalyze").onclick = async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     const cookies = await chrome.cookies.getAll({ url: tab.url });
@@ -153,6 +160,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   document.getElementById("refresh").onclick = refreshAll;
+
+  // Tools and links
   document.getElementById("gameBtn").onclick = () => {
   chrome.tabs.create({ url: chrome.runtime.getURL("game.html") });
 };
@@ -160,6 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.tabs.create({ url: "https://aistudio.google.com/app/api-keys" });
   };
 });
+
+// Launch game page
 document.getElementById("playGame").onclick = () => {
   chrome.tabs.create({ url: chrome.runtime.getURL("game.html") });
 };
