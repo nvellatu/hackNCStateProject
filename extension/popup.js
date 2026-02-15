@@ -170,7 +170,3 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 });
 
-// Launch game page
-document.getElementById("playGame").onclick = () => {
-  chrome.tabs.create({ url: chrome.runtime.getURL("game.html") });
-};
