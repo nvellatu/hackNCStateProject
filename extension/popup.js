@@ -181,16 +181,51 @@ async function refreshAll() {
 }
 
 let GEMINI_API_KEY = null;
+const apiSection = document.getElementById("api-key-section");
+const settingsBtn = document.getElementById("settings-btn");
+const clearBtn = document.getElementById("clear-key");
+const keyInput = document.getElementById("api-key-input");
+const keyStatus = document.getElementById("key-status");
+
+settingsBtn.addEventListener("click", () => {
+  if (apiSection.classList.contains("hidden")) {
+    apiSection.classList.remove("hidden");
+    keyStatus.textContent = GEMINI_API_KEY ? "Current key loaded — edit and save to update." : "";
+    keyStatus.style.color = "inherit";
+  } else {
+    apiSection.classList.add("hidden");
+    keyStatus.textContent = "";
+  }
+});
+if (clearBtn) {
+  clearBtn.addEventListener("click", async () => {
+    if (confirm("Really remove your Gemini API key?")) {
+      await chrome.storage.local.remove("geminiApiKey");
+      GEMINI_API_KEY = null;
+      keyInput.value = "";
+      apiSection.classList.remove("hidden"); // show section after clear
+      keyStatus.textContent = "Key cleared. Enter a new one if needed.";
+      keyStatus.style.color = "orange";
+
+      // Disable info buttons until new key
+      document.querySelectorAll(".info-btn").forEach(btn => {
+        btn.disabled = true;
+        btn.title = "Set API key first";
+      });
+    }
+  });
+}
 
 async function loadApiKey() {
   const data = await chrome.storage.local.get("geminiApiKey");
   GEMINI_API_KEY = data.geminiApiKey || null;
   
-  const section = document.getElementById("api-key-section");
   if (GEMINI_API_KEY) {
-    section.classList.add("hidden");
+    apiSection.classList.add("hidden");
+    keyInput.value = GEMINI_API_KEY; // pre-fill for editing
   } else {
-    section.classList.remove("hidden");
+    apiSection.classList.remove("hidden");
+    keyInput.value = "";
   }
 }
 
@@ -208,14 +243,26 @@ async function saveApiKey() {
   try {
     await chrome.storage.local.set({ geminiApiKey: key });
     GEMINI_API_KEY = key;
-    document.getElementById("api-key-section").classList.add("hidden");
-    status.textContent = "Key saved! Refreshing explanations...";
+    status.textContent = "Key saved successfully!";
     status.style.color = "green";
-    // Optional: re-render cookies to enable buttons
+
+    // Hide section after save (optional — or keep open for multiple edits)
+    setTimeout(() => {
+      apiSection.classList.add("hidden");
+      status.textContent = "";
+    }, 2000);
+
+    // Re-enable info buttons
+    document.querySelectorAll(".info-btn").forEach(btn => {
+      btn.disabled = false;
+      btn.title = "Get AI explanation";
+    });
+
+    // Optional: refresh cookie list
     const tab = await getActiveTab();
     if (tab) await loadCookiesForTab(tab);
   } catch (err) {
-    status.textContent = "Error saving key: " + err.message;
+    status.textContent = "Error: " + err.message;
     status.style.color = "red";
   }
 }
